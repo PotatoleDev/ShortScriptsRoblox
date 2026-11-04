@@ -1,0 +1,21 @@
+local lava = script.Parent
+local lavaSpeed = 0.4
+local normalSize = lava.Size
+
+local startTime = os.time()
+local gameTime = 22
+
+while os.time() - startTime < gameTime do
+	lava.Size = lava.Size + Vector3.new(0, lavaSpeed, 0)
+	wait(0.1)
+	lava.Touched:Connect(function(hit)
+		local humanoid = hit.Parent:FindFirstChild("Humanoid")
+		if humanoid then
+			humanoid.Health = 0
+		end
+	end)
+	if os.time() - startTime >= gameTime then
+		lava.Size = normalSize
+		startTime = os.time()
+	end
+end
