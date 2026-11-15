@@ -1,0 +1,71 @@
+local TweenService = game:GetService("TweenService")
+local doorModel = script.Parent
+
+local door = doorModel:WaitForChild("DoorPart")
+local hinge = doorModel:WaitForChild("Hinge")
+local prompt = door:WaitForChild("ProximityPrompt")
+
+-- Configuration
+local OPEN_ANGLE = 90
+local TWEEN_TIME = 0.7
+
+local isOpen = false
+local isAnimating = false
+
+-- Position initiale de la porte par rapport au pivot
+local closedOffset = hinge.CFrame:ToObjectSpace(door.CFrame)
+
+-- Valeur qui servira à animer la rotation
+local angleValue = Instance.new("NumberValue")
+angleValue.Value = 0
+
+-- Actualiser la position de la porte pendant l'animation
+angleValue.Changed:Connect(function(angle)
+	door.CFrame =
+		hinge.CFrame
+		* CFrame.Angles(0, math.rad(angle), 0)
+		* closedOffset
+end)
+
+-- Fonction pour ouvrir ou fermer la porte
+local function toggleDoor()
+
+	if isAnimating then return end
+	
+	isAnimating = true
+	prompt.Enabled = false
+
+	local targetAngle
+
+	if isOpen then
+		targetAngle = 0
+		prompt.ActionText = "Ouvrir"
+	else
+		targetAngle = OPEN_ANGLE
+		prompt.ActionText = "Fermer"
+	end
+
+	local tweenInfo = TweenInfo.new(
+		TWEEN_TIME,
+		Enum.EasingStyle.Sine,
+		Enum.EasingDirection.InOut
+	)
+
+	local tween = TweenService:Create(
+		angleValue,
+		tweenInfo,
+		{Value = targetAngle}
+	)
+
+	tween:Play()
+	tween.Completed:Wait()
+
+	isOpen = not isOpen
+	isAnimating = false
+	--prompt.Enabled = true
+end
+
+-- Détecter l'interaction du joueur
+prompt.Triggered:Connect(function(player)
+	toggleDoor()
+end)
